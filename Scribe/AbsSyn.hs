@@ -15,6 +15,7 @@ data Term
   | Delim Term
   | Prop Term Ident
   | Qual Term Ident
+  | Ref  Term Ident
   | Lit Literal
   deriving Show
 

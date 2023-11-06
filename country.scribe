@@ -14,5 +14,6 @@
         </table></div>
 
         <p>[expr entity.P31]</p>
+        -- <p>[mkS (expr entity) (mkNP aSg_Det (expr entity.P31))]</p>
     </body>
 </html>

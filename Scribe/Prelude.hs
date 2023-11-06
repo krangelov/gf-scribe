@@ -15,6 +15,7 @@ prelude = Map.fromList $
   ,("qid", qid)
   ,("time", time)
   ,("quantity", quantity)
+  ,("url", url)
   ,("media", media)
   ,("first", first)
   ,("expr", expr)
@@ -41,6 +42,10 @@ quantity db gr [arg] = do
   where    
     quantity ('+':s) = read s
     quantity s       = read s
+
+url db gr [arg] = do
+  return (SValue [x | obj <- snakObj arg,
+                      x <- result1 (valFromObj "datavalue" obj >>= valFromObj "value")])
 
 media db gr [arg] = do
   return (SValue [media x | obj <- snakObj arg,

@@ -71,6 +71,11 @@ run env db gr cnc (Qual t prop) [] = do
   Value objs <- run env db gr cnc t []
   return (Snak [x | obj <- objs,
                     x <- result (valFromObj "qualifiers" obj >>= valFromObj prop)])
+run env db gr cnc (Ref t prop) [] = do
+  Value objs <- run env db gr cnc t []
+  return (Snak [x | obj  <- objs,
+                    ref <- result (valFromObj "references" obj),
+                    x <- result (valFromObj "snaks" ref >>= valFromObj prop)])
 run env db gr cnc (App f x) args = do
   x <- run env db gr cnc x []
   run env db gr cnc f (x:args)

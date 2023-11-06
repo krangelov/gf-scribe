@@ -127,6 +127,7 @@ Exp2 :: { Term }
 Exp2
   : Exp2 '.' Ident        { Prop $1 $3 }
   | Exp2 '?' Ident        { Qual $1 $3 }
+  | Exp2 '!' Ident        { Ref  $1 $3 }
   | Ident                 { Var $1 }
   | String                { if null $1 then Empty else Lit (LStr $1) }
   | Integer               { Lit (LInt $1) }
