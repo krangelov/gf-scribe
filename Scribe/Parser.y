@@ -131,6 +131,7 @@ Exp2
   | String                { if null $1 then Empty else Lit (LStr $1) }
   | Integer               { Lit (LInt $1) }
   | Double                { Lit (LFlt $1) }
+  | '[' Document ']'      { Delim $2 }
   | '(' Exp1 ')'          { $2 }
 
 ListExp :: { Term }

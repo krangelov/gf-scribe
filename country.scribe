@@ -1,1 +1,18 @@
-<h1>expr entity</h1>
+<html>
+    <body>
+        <h1>expr entity</h1>
+
+        <div class="infobox"><table border=1>
+            <tr><td><table><tr>
+                <td>[<img src=(media (first entity.P41)) height=78/>]</td>
+                <td>[<img src=(media (first entity.P94)) height=78/>]</td>
+            </tr><tr>
+                <td>flag_1_N</td>
+                <td>coat_of_arms_N</td>
+            </tr></table></td></tr>
+            <tr><td><img src=(media (first entity.P242)) width=250/></td></tr>
+        </table></div>
+
+        <p>[expr entity.P31]</p>
+    </body>
+</html>

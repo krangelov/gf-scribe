@@ -5,6 +5,7 @@ import PGF2
 import Scribe.AbsSyn
 import Text.JSON
 import Text.Html
+import Data.List
 import qualified Data.Map as Map
 
 type Qid = String
@@ -37,14 +38,31 @@ showTags show []     = id
 showTags show (x:xs) = show x . showLines show xs
 
 run env db gr cnc (Tag tag attrs body) args = do
-  res <- run env db gr cnc body []
-  return (HTMLValue [Html [HtmlTag tag [] html] | html <- htmlVal cnc res])
+  attrs <- mapM evalAttr attrs
+  body  <- run env db gr cnc body []
+  return (HTMLValue [Html [HtmlTag tag attrs body]
+                              | attrs <- sequence attrs
+                              , body <- htmlVal cnc body])
+  where
+    evalAttr (name,term) = do
+      val <- run env db gr cnc term []
+      return [HtmlAttr name val | val <- strVal cnc val]
 run env db gr cnc (Var var) args =
   case Map.lookup var env of
     Just val -> val db gr args
-    Nothing  -> fail ("Undefined variable "++var)
+    Nothing  -> case functionType gr var of
+                  Just (DTyp _ cat _) -> return (EValue [(EFun var,cat)])
+                  Nothing             -> fail ("Undefined variable "++var)
 run env db gr cnc Empty args =
   return (HTMLValue [noHtml])
+run env db gr cnc (C t1 t2) args = do
+  v1 <- run env db gr cnc t1 []
+  v2 <- run env db gr cnc t2 []
+  return (HTMLValue [html1 +++ html2 | html1 <- htmlVal cnc v1
+                                     , html2 <- htmlVal cnc v2])
+run env db gr cnc (Delim t) args = do
+  v <- run env db gr cnc t []
+  return (HTMLValue [concatHtml (intersperse (Html [HtmlString " "]) (htmlVal cnc v))])
 run env db gr cnc (Prop t prop) [] = do
   Entity objs <- run env db gr cnc t []
   return (Value [x | (_,obj) <- objs,
@@ -79,3 +97,12 @@ exprVal (EValue es) = es
 
 htmlVal cnc (HTMLValue htmls) = htmls
 htmlVal cnc (EValue es) = [Html [HtmlString (linearize cnc e)] | (e,_) <- es]
+
+strVal cnc (Entity objs) = map (\(_,obj) -> showJSObject obj "") objs
+strVal cnc (Value  objs) = map (\obj -> showJSObject obj "") objs
+strVal cnc (Snak   objs) = map (\obj -> showJSObject obj "") objs
+strVal cnc (SValue vals) = vals
+strVal cnc (QValue vals) = map show vals
+strVal cnc (IValue vals) = map show vals
+strVal cnc (EValue vals) = map (\(e,_) -> linearize cnc e) vals
+strVal cnc (HTMLValue vals) = map renderHtml vals

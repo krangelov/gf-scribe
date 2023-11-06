@@ -12,6 +12,7 @@ data Term
   | Var Ident
   | C Term Term
   | Empty
+  | Delim Term
   | Prop Term Ident
   | Qual Term Ident
   | Lit Literal

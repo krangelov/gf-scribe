@@ -3,6 +3,7 @@ import Data.Char (toUpper)
 import Database.Daison
 import Scribe.AbsSyn
 import Scribe.Parser
+import Scribe.Lexer
 import Scribe.Interpreter
 import Scribe.Prelude
 import qualified Data.Map as Map
@@ -22,7 +23,7 @@ main = do
               (fname:_) -> do bs <- BS.readFile fname
                               case runP pDocument bs of
                                 Right prg      -> return (Just prg)
-                                Left (pos,msg) -> fail msg
+                                Left (Pn line col,msg) -> fail (show line ++ ":" ++ show col ++ ":" ++ msg)
               _         -> do return Nothing
   rsp <- simpleHTTP (getRequest ("https://www.wikidata.org/wiki/Special:EntityData/"++qid++".json"))
   case decode (rspBody rsp) >>= valFromObj "entities" >>= valFromObj qid >>= valFromObj "claims" of
@@ -31,17 +32,17 @@ main = do
                     case mb_prg of
                       Just prg -> do val <- run env db gr cnc prg []
                                      putStrLn (showValue val "")
-                      Nothing  -> do interactive env db gr cnc
+                      Nothing  -> do interactive env db gr cnc qid
     Error msg -> fail msg
   where
     toCnc (c:cs) = "Parse"++(toUpper c:cs)
     toCnc s      = s
 
-interactive env db gr cnc = runInputT defaultSettings loop
+interactive env db gr cnc qid = runInputT defaultSettings loop
   where
     loop :: InputT IO ()
     loop = do
-      minput <- getInputLine "> "
+      minput <- getInputLine (qid++"> ")
       case minput of
         Nothing    -> return ()
         Just input -> case runP pDocument (BS.pack input) of
